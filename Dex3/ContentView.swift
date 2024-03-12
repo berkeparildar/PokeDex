@@ -8,9 +8,7 @@
 import SwiftUI
 import CoreData
 
-struct ContentView: View {
-    @Environment(\.managedObjectContext) private var viewContext
-    
+struct ContentView: View {    
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \Pokemon.id, ascending: true)],
         animation: .default)
@@ -51,10 +49,11 @@ struct ContentView: View {
                                 filterByFavorites.toggle()
                             }
                         } label: {
-                            Label("Filter by favorites", systemImage: filterByFavorites ? "star.fill" : "star")
+                            Image(systemName: filterByFavorites ? "star.fill" : "star")
+                                .font(.title2)
+                                .foregroundStyle(.yellow)
                         }
-                        .font(.title)
-                        .foregroundStyle(.yellow)
+                        
                     }
                 }
             }

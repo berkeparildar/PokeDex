@@ -10,6 +10,7 @@ import CoreData
 import Charts
 
 struct PokemonDetailView: View {
+    @Environment(\.managedObjectContext) private var viewContext
     @EnvironmentObject var pokemon: Pokemon
     @State var showShiny = false
     var body: some View {
@@ -18,13 +19,21 @@ struct PokemonDetailView: View {
                 Image(pokemon.background)
                     .resizable()
                     .scaledToFit()
-                    .shadow(color: .black, radius: 6)
+                    .overlay {
+                        LinearGradient(
+                            stops: [
+                                Gradient.Stop(color: .black, location: 0),
+                                Gradient.Stop(color: .clear, location: 0.2),
+                                Gradient.Stop(color: .clear, location: 0.8),
+                                Gradient.Stop(color: .black, location: 1)
+                            ], startPoint: .top, endPoint: .bottom)
+                    }
                 AsyncImage(url: showShiny ? pokemon.shiny : pokemon.sprite) { image in
                     image
                         .resizable()
                         .scaledToFit()
                         .padding(.top, 50)
-                        .shadow(color: .black, radius: 6)
+                    
                 } placeholder: {
                     ProgressView()
                 }
@@ -42,6 +51,28 @@ struct PokemonDetailView: View {
                 }
                 Spacer()
                 
+                Button {
+                    withAnimation {
+                        pokemon.favorite.toggle()
+                        do {
+                            try viewContext.save()
+                        } catch {
+                            let nsError = error as NSError
+                            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+                        }
+                    }
+                } label: {
+                    if pokemon.favorite {
+                        Image(systemName: "star.fill")
+                            .font(.title)
+                            .foregroundStyle(.yellow)
+                    }
+                    else {
+                        Image(systemName: "star")
+                            .font(.title)
+                            .foregroundStyle(.yellow)
+                    }
+                }
             }
             .padding()
             
@@ -90,4 +121,5 @@ struct PokemonDetailView: View {
     let results = try! context.fetch(fetchRequest)
     return PokemonDetailView()
         .environmentObject(results.first!)
+        .preferredColorScheme(.dark)
 }
