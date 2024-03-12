@@ -15,31 +15,51 @@ struct ContentView: View {
         sortDescriptors: [NSSortDescriptor(keyPath: \Pokemon.id, ascending: true)],
         animation: .default)
     private var pokedex: FetchedResults<Pokemon>
-    
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \Pokemon.id, ascending: true)],
+        predicate: NSPredicate(format: "favorite = %d", true),
+        animation: .default)
+    private var favorites: FetchedResults<Pokemon>
+    @StateObject private var viewModel = PokemonViewModel(controller: FetchController())
+    @State var filterByFavorites: Bool = false
     var body: some View {
-        NavigationStack{
-            List(pokedex) { pokemon in
-                NavigationLink (value: pokemon) {
-                    AsyncImage(url: pokemon.sprite) { image in
-                        image
-                            .resizable()
-                            .scaledToFit()
-                    } placeholder: {
-                        ProgressView()
+        switch viewModel.status {
+        case .fetching:
+            NavigationStack{
+                List(filterByFavorites ? favorites : pokedex) { pokemon in
+                    NavigationLink (value: pokemon) {
+                        AsyncImage(url: pokemon.sprite) { image in
+                            image
+                                .resizable()
+                                .scaledToFit()
+                        } placeholder: {
+                            ProgressView()
+                        }
+                        .frame(width: 100, height: 100)
+                        Text("\(pokemon.name!.capitalized)")
                     }
-                    .frame(width: 100, height: 100)
-                    Text("\(pokemon.name!.capitalized)")
+                }
+                .navigationTitle("Pokedex")
+                .navigationDestination(for: Pokemon.self, destination: { pokemon in
+                    PokemonDetailView()
+                        .environmentObject(pokemon)
+                })
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button {
+                            withAnimation {
+                                filterByFavorites.toggle()
+                            }
+                        } label: {
+                            Label("Filter by favorites", systemImage: filterByFavorites ? "star.fill" : "star")
+                        }
+                        .font(.title)
+                        .foregroundStyle(.yellow)
+                    }
                 }
             }
-            .navigationTitle("Pokedex")
-            .navigationDestination(for: Pokemon.self, destination: { pokemon in
-                Text("Hello")
-            })
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-            }
+        default:
+            ProgressView()
         }
     }
 }

@@ -10,10 +10,10 @@ import Foundation
 extension Pokemon {
     var background: String {
         switch self.types![0] {
-        case "normal", "grass", "electric", "fairy" :
+        case "normal", "grass", "electric", "poison", "fairy" :
             return "normalgrasselectricpoisonfairy"
-        case "rock", "ground", "steel", "fighting", "dark", "psychic":
-            return "rockgroundsteelfightingdarkpsychic"
+        case "rock", "ground", "steel", "fighting", "ghost", "dark", "psychic":
+            return "rockgroundsteelfightingghostdarkpsychic"
         case "fire", "dragon":
             return "firedragon"
         case "flying", "bug":
@@ -40,6 +40,12 @@ extension Pokemon {
     
     var highestStat: Stat {
         stats.max{ $0.value < $1.value }!
+    }
+    
+    func organizeTypes() {
+        if self.types!.count == 2 && self.types![0] == "normal" {
+            self.types!.swapAt(0, 1)
+        }
     }
 }
 
